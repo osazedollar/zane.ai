@@ -3,10 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { toast } from "sonner";
-import { Send, Bot, User, Settings } from "lucide-react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
+import { Send, Bot, User } from "lucide-react";
 
 interface Message {
   id: string;
@@ -15,23 +12,17 @@ interface Message {
   timestamp: Date;
 }
 
-interface ChatInterfaceProps {
-  apiKey: string;
-  onApiKeyChange: (key: string) => void;
-}
-
-export function ChatInterface({ apiKey, onApiKeyChange }: ChatInterfaceProps) {
+export function ChatInterface() {
   const [messages, setMessages] = useState<Message[]>([
     {
       id: "1",
-      content: "Hello! I'm your AI Shopping assistant. How can I help you today?",
+      content: "Hello! I'm your shopping assistant. How can I help you today?",
       role: "assistant",
       timestamp: new Date(),
     },
   ]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [tempApiKey, setTempApiKey] = useState(apiKey);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -40,12 +31,8 @@ export function ChatInterface({ apiKey, onApiKeyChange }: ChatInterfaceProps) {
     }
   }, [messages]);
 
-  const sendMessage = async () => {
+  const sendMessage = () => {
     if (!input.trim()) return;
-    if (!apiKey) {
-      toast.error("Please set your OpenAI API key first");
-      return;
-    }
 
     const userMessage: Message = {
       id: Date.now().toString(),
@@ -58,50 +45,17 @@ export function ChatInterface({ apiKey, onApiKeyChange }: ChatInterfaceProps) {
     setInput("");
     setIsLoading(true);
 
-    try {
-      const response = await fetch("https://api.openai.com/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${apiKey}`,
-        },
-        body: JSON.stringify({
-          model: "gpt-4.1-2025-04-14",
-          messages: [
-            {
-              role: "system",
-              content: "You are a helpful AI assistant. Be concise and friendly.",
-            },
-            ...messages.map((msg) => ({
-              role: msg.role,
-              content: msg.content,
-            })),
-            { role: "user", content: input.trim() },
-          ],
-          max_tokens: 1000,
-          temperature: 0.7,
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error(`API request failed: ${response.status}`);
-      }
-
-      const data = await response.json();
+    // Simulate assistant reply (replace with your backend logic if needed)
+    setTimeout(() => {
       const assistantMessage: Message = {
         id: (Date.now() + 1).toString(),
-        content: data.choices[0].message.content,
+        content: "This is a placeholder response. Connect your backend here.",
         role: "assistant",
         timestamp: new Date(),
       };
-
       setMessages((prev) => [...prev, assistantMessage]);
-    } catch (error) {
-      console.error("Error sending message:", error);
-      toast.error("Failed to send message. Please check your API key and try again.");
-    } finally {
       setIsLoading(false);
-    }
+    }, 1000);
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -111,53 +65,14 @@ export function ChatInterface({ apiKey, onApiKeyChange }: ChatInterfaceProps) {
     }
   };
 
-  const saveApiKey = () => {
-    onApiKeyChange(tempApiKey);
-    toast.success("API key saved successfully!");
-  };
-
   return (
     <div className="flex flex-col h-screen bg-background">
       {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b border-border">
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center">
-            <Bot className="w-4 h-4 text-primary-foreground" />
-          </div>
-          <h1 className="text-xl font-semibold text-foreground">Zani AI</h1>
+      <div className="flex items-center gap-3 p-4 border-b border-border">
+        <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center">
+          <Bot className="w-4 h-4 text-primary-foreground" />
         </div>
-        
-        <Dialog>
-          <DialogTrigger asChild>
-            <Button variant="outline" size="sm" className="gap-2">
-              <Settings className="w-4 h-4" />
-              Settings
-            </Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>API Settings</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="apiKey">OpenAI API Key</Label>
-                <Input
-                  id="apiKey"
-                  type="password"
-                  placeholder="sk-..."
-                  value={tempApiKey}
-                  onChange={(e) => setTempApiKey(e.target.value)}
-                />
-                <p className="text-sm text-muted-foreground">
-                  Your API key is stored locally and never sent to our servers...
-                </p>
-              </div>
-              <Button onClick={saveApiKey} className="w-full">
-                Save API Key
-              </Button>
-            </div>
-          </DialogContent>
-        </Dialog>
+        <h1 className="text-xl font-semibold text-foreground">Zane AI</h1>
       </div>
 
       {/* Messages */}
@@ -175,7 +90,7 @@ export function ChatInterface({ apiKey, onApiKeyChange }: ChatInterfaceProps) {
                   <Bot className="w-4 h-4 text-ai-message-foreground" />
                 </div>
               )}
-              
+
               <Card
                 className={`max-w-[80%] p-4 ${
                   message.role === "user"
@@ -198,7 +113,7 @@ export function ChatInterface({ apiKey, onApiKeyChange }: ChatInterfaceProps) {
               )}
             </div>
           ))}
-          
+
           {isLoading && (
             <div className="flex gap-3 justify-start">
               <div className="w-8 h-8 rounded-full bg-ai-message flex items-center justify-center flex-shrink-0 mt-1">

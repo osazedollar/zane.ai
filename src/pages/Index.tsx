@@ -1,100 +1,111 @@
-import { useState, useEffect } from "react";
-import { ChatInterface } from "@/components/ChatInterface";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Bot, Sparkles } from "lucide-react";
+import { Sparkles } from "lucide-react";
 
 const Index = () => {
-  const [apiKey, setApiKey] = useState("");
-  const [showWelcome, setShowWelcome] = useState(true);
+  const [isSignUp, setIsSignUp] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const navigate = useNavigate();
 
-  useEffect(() => {
-    const savedApiKey = localStorage.getItem("openai-api-key");
-    if (savedApiKey) {
-      setApiKey(savedApiKey);
-      setShowWelcome(false);
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email.trim() || !password.trim()) return;
+
+    if (isSignUp) {
+      // 🔗 Handle signup API logic here
+      console.log("Signup:", { email, password });
+
+      // ✅ After signup, redirect to Signin page
+      setIsSignUp(false);
+    } else {
+      // 🔗 Handle signin API logic here
+      console.log("Signin:", { email, password });
+
+      // ✅ After successful signin, redirect to ChatInterface
+      navigate("/chat");
     }
-  }, []);
-
-  const handleApiKeyChange = (key: string) => {
-    setApiKey(key);
-    localStorage.setItem("openai-api-key", key);
-    setShowWelcome(false);
   };
 
-  const handleGetStarted = (key: string) => {
-    if (!key.trim()) return;
-    handleApiKeyChange(key);
-  };
-
-  if (showWelcome || !apiKey) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background p-4">
-        <Card className="w-full max-w-md p-8 text-center space-y-6">
-          <div className="flex items-center justify-center">
-            <div className="w-16 h-16 rounded-full bg-gradient-to-r from-primary to-primary/80 flex items-center justify-center">
-              <Bot className="w-8 h-8 text-primary-foreground" />
-            </div>
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-background p-4">
+      <Card className="w-full max-w-md p-8 space-y-6">
+        {/* Header */}
+        <div className="text-center space-y-2">
+          <div className="flex items-center justify-center gap-2">
+            <h1 className="text-2xl font-bold">Zane AI</h1>
+            <Sparkles className="w-5 h-5 text-primary" />
           </div>
-          
+          <p className="text-muted-foreground">
+            {isSignUp
+              ? "Create your account to get started."
+              : "Sign in to continue."}
+          </p>
+        </div>
+
+        {/* Auth Form */}
+        <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <h1 className="text-2xl font-bold flex items-center justify-center gap-2">
-              Zane AI
-              <Sparkles className="w-5 h-5 text-primary" />
-            </h1>
-            <p className="text-muted-foreground">
-              Your intelligent AI assistant powered by OpenAI
-            </p>
+            <Label htmlFor="email">Email</Label>
+            <Input
+              id="email"
+              type="email"
+              placeholder="you@example.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="password">Password</Label>
+            <Input
+              id="password"
+              type="password"
+              placeholder="••••••••"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
           </div>
 
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="welcome-api-key">OpenAI API Key</Label>
-              <Input
-                id="welcome-api-key"
-                type="password"
-                placeholder="sk-..."
-                value={apiKey}
-                onChange={(e) => setApiKey(e.target.value)}
-                onKeyPress={(e) => {
-                  if (e.key === "Enter") {
-                    handleGetStarted(apiKey);
-                  }
-                }}
-              />
-              <p className="text-xs text-muted-foreground">
-                Your API key is stored locally and never shared
-              </p>
-            </div>
-            
-            <Button 
-              onClick={() => handleGetStarted(apiKey)}
-              disabled={!apiKey.trim()}
-              className="w-full"
-            >
-              Get Started
-            </Button>
-          </div>
+          <Button type="submit" className="w-full">
+            {isSignUp ? "Sign Up" : "Sign In"}
+          </Button>
+        </form>
 
-          <div className="text-xs text-muted-foreground">
-            Don't have an API key?{" "}
-            <a 
-              href="https://platform.openai.com/api-keys" 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="text-primary hover:underline"
-            >
-              Get one from OpenAI
-            </a>
-          </div>
-        </Card>
-      </div>
-    );
-  }
-
-  return <ChatInterface apiKey={apiKey} onApiKeyChange={handleApiKeyChange} />;
+        {/* Toggle between Signin/Signup */}
+        <div className="text-center text-sm text-muted-foreground">
+          {isSignUp ? (
+            <>
+              Already have an account?{" "}
+              <button
+                type="button"
+                onClick={() => setIsSignUp(false)}
+                className="text-primary hover:underline"
+              >
+                Sign in
+              </button>
+            </>
+          ) : (
+            <>
+              Don’t have an account?{" "}
+              <button
+                type="button"
+                onClick={() => setIsSignUp(true)}
+                className="text-primary hover:underline"
+              >
+                Sign up
+              </button>
+            </>
+          )}
+        </div>
+      </Card>
+    </div>
+  );
 };
 
 export default Index;
