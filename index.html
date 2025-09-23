@@ -1,13 +1,33 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
   <head>
+    <!-- Metadata -->
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Vite + React + TS</title>
+    <meta name="description" content="Zane AI – An intelligent assistant designed to streamline your workflow and boost productivity." />
+    <meta name="theme-color" content="#4a90e2" />
+
+    <!-- Title and Favicon -->
+    <title>Zane AI</title>
+    <link rel="icon" type="image/png" href="/zane_logo.png" />
+
+    <!-- Preload main script for performance -->
+    <link rel="preload" href="/src/main.tsx" as="script" />
+
+    <!-- Open Graph for social sharing -->
+    <meta property="og:title" content="Zane AI" />
+    <meta property="og:description" content="Your AI-powered productivity companion." />
+    <meta property="og:image" content="/zane_logo.png" />
+    <meta property="og:type" content="website" />
   </head>
+
   <body>
+    <noscript>
+      You need to enable JavaScript to run this application.
+    </noscript>
     <div id="root"></div>
+
+    <!-- Main Application Script -->
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
