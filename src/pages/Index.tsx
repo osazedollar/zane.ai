@@ -4,29 +4,35 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Sparkles } from "lucide-react";
+import ZaneLogo from "../assets/zane_logo_2.png";
 
 const Index = () => {
   const [isSignUp, setIsSignUp] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [error, setError] = useState("");
   const navigate = useNavigate();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    setError("");
+
     if (!email.trim() || !password.trim()) return;
 
     if (isSignUp) {
-      // 🔗 Handle signup API logic here
+      if (password !== confirmPassword) {
+        setError("Passwords do not match.");
+        return;
+      }
+
       console.log("Signup:", { email, password });
-
-      // ✅ After signup, redirect to Signin page
       setIsSignUp(false);
+      setConfirmPassword("");
+      setPassword("");
+      setEmail("");
     } else {
-      // 🔗 Handle signin API logic here
       console.log("Signin:", { email, password });
-
-      // ✅ After successful signin, redirect to ChatInterface
       navigate("/chat");
     }
   };
@@ -36,9 +42,13 @@ const Index = () => {
       <Card className="w-full max-w-md p-8 space-y-6">
         {/* Header */}
         <div className="text-center space-y-2">
-          <div className="flex items-center justify-center gap-2">
+          <div className="flex items-center justify-center gap-3">
+            <img
+              src={ZaneLogo}
+              alt="Zane Logo"
+              className="h-12 w-auto animate-spin-slow"
+            />
             <h1 className="text-2xl font-bold">Zane AI</h1>
-            <Sparkles className="w-5 h-5 text-primary" />
           </div>
           <p className="text-muted-foreground">
             {isSignUp
@@ -60,6 +70,7 @@ const Index = () => {
               required
             />
           </div>
+
           <div className="space-y-2">
             <Label htmlFor="password">Password</Label>
             <Input
@@ -71,6 +82,24 @@ const Index = () => {
               required
             />
           </div>
+
+          {isSignUp && (
+            <div className="space-y-2">
+              <Label htmlFor="confirmPassword">Confirm Password</Label>
+              <Input
+                id="confirmPassword"
+                type="password"
+                placeholder="Re-enter password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                required
+              />
+            </div>
+          )}
+
+          {error && (
+            <p className="text-sm text-red-500 text-center">{error}</p>
+          )}
 
           <Button type="submit" className="w-full">
             {isSignUp ? "Sign Up" : "Sign In"}
@@ -84,7 +113,10 @@ const Index = () => {
               Already have an account?{" "}
               <button
                 type="button"
-                onClick={() => setIsSignUp(false)}
+                onClick={() => {
+                  setIsSignUp(false);
+                  setError("");
+                }}
                 className="text-primary hover:underline"
               >
                 Sign in
@@ -95,7 +127,10 @@ const Index = () => {
               Don’t have an account?{" "}
               <button
                 type="button"
-                onClick={() => setIsSignUp(true)}
+                onClick={() => {
+                  setIsSignUp(true);
+                  setError("");
+                }}
                 className="text-primary hover:underline"
               >
                 Sign up
