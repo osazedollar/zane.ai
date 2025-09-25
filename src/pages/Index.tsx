@@ -1,5 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import type { AppDispatch, RootState } from "@/store";
+import { signinThunk, registerThunk } from "../store/authThunks";
+
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,29 +15,50 @@ const Index = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [error, setError] = useState("");
+  const [localError, setLocalError] = useState("");
+
+  const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const { account, loading, error, isRegistered } = useSelector(
+    (state: RootState) => state.auth
+  );
+
+  // Redirect after successful login
+  useEffect(() => {
+    if (account) navigate("/chat");
+  }, [account, navigate]);
+
+  // Redirect after successful registration → OTP
+  useEffect(() => {
+    if (isRegistered) {
+      navigate("/verify-otp");
+    }
+  }, [isRegistered, navigate]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError("");
+    setLocalError("");
 
     if (!email.trim() || !password.trim()) return;
 
     if (isSignUp) {
       if (password !== confirmPassword) {
-        setError("Passwords do not match.");
+        setLocalError("Passwords do not match.");
         return;
       }
 
-      console.log("Signup:", { email, password });
-      setIsSignUp(false);
-      setConfirmPassword("");
-      setPassword("");
-      setEmail("");
+      // Dispatch the registration thunk
+      const result = await dispatch(registerThunk({ email, password }));
+      if (registerThunk.rejected.match(result)) {
+        setLocalError(result.payload as string || "Registration failed");
+      }
     } else {
-      console.log("Signin:", { email, password });
-      navigate("/chat");
+      // Dispatch the sign-in thunk
+      const result = await dispatch(signinThunk({ email, password }));
+      if (signinThunk.rejected.match(result)) {
+        setLocalError(result.payload as string || "Sign in failed");
+      }
     }
   };
 
@@ -51,9 +76,7 @@ const Index = () => {
             <h1 className="text-2xl font-bold">Zane AI</h1>
           </div>
           <p className="text-muted-foreground">
-            {isSignUp
-              ? "Create your account to get started."
-              : "Sign in to continue."}
+            {isSignUp ? "Create your account to get started." : "Sign in to continue."}
           </p>
         </div>
 
@@ -97,16 +120,25 @@ const Index = () => {
             </div>
           )}
 
-          {error && (
-            <p className="text-sm text-red-500 text-center">{error}</p>
+          {/* Errors */}
+          {(localError || error) && (
+            <p className="text-sm text-red-500 text-center">
+              {localError || error}
+            </p>
           )}
 
-          <Button type="submit" className="w-full">
-            {isSignUp ? "Sign Up" : "Sign In"}
+          <Button type="submit" className="w-full" disabled={loading}>
+            {loading
+              ? isSignUp
+                ? "Signing Up..."
+                : "Signing In..."
+              : isSignUp
+              ? "Sign Up"
+              : "Sign In"}
           </Button>
         </form>
 
-        {/* Toggle between Signin/Signup */}
+        {/* Toggle Sign In/Sign Up */}
         <div className="text-center text-sm text-muted-foreground">
           {isSignUp ? (
             <>
@@ -115,7 +147,7 @@ const Index = () => {
                 type="button"
                 onClick={() => {
                   setIsSignUp(false);
-                  setError("");
+                  setLocalError("");
                 }}
                 className="text-primary hover:underline"
               >
@@ -129,7 +161,7 @@ const Index = () => {
                 type="button"
                 onClick={() => {
                   setIsSignUp(true);
-                  setError("");
+                  setLocalError("");
                 }}
                 className="text-primary hover:underline"
               >

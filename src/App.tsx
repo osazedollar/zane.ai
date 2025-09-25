@@ -5,6 +5,8 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 import Index from "./pages/Index";
+import VerifyOtp from "./pages/VerifyOtp";
+import Verified from "./pages/Verified";
 import NotFound from "./pages/NotFound";
 import { ChatInterface } from "./components/ChatInterface"; // ⬅️ Import the ChatInterface
 
@@ -19,6 +21,9 @@ const App = () => (
         <Routes>
           {/* Home page */}
           <Route path="/" element={<Index />} />
+
+          <Route path="/verify-otp" element={<VerifyOtp />} />
+          <Route path="/verified" element={<Verified />} />
 
           {/* ChatInterface route */}
           <Route path="/chat" element={<ChatInterface />} />
