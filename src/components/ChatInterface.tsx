@@ -1,9 +1,25 @@
+// src/components/ChatInterface.tsx
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Send, Bot, User } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { useSelector, useDispatch } from "react-redux";
+import type { RootState, AppDispatch } from "@/store";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+
+import { logoutLocal } from "@/store/authSlice";
+import { logoutThunk } from "@/store/authThunks";
+import { fetchProfile } from "@/store/profileThunks";
+import { clearProfile } from "@/store/profileSlice";
 
 interface Message {
   id: string;
@@ -25,6 +41,17 @@ export function ChatInterface() {
   const [isLoading, setIsLoading] = useState(false);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
 
+  const navigate = useNavigate();
+  const dispatch = useDispatch<AppDispatch>();
+
+  // pull from profile slice
+  const { account } = useSelector((state: RootState) => state.profile);
+
+  // Fetch profile when chat loads
+  useEffect(() => {
+    dispatch(fetchProfile());
+  }, [dispatch]);
+
   useEffect(() => {
     if (scrollAreaRef.current) {
       scrollAreaRef.current.scrollTop = scrollAreaRef.current.scrollHeight;
@@ -45,7 +72,7 @@ export function ChatInterface() {
     setInput("");
     setIsLoading(true);
 
-    // Simulate assistant reply (replace with your backend logic if needed)
+    // Simulate assistant reply (replace with backend logic)
     setTimeout(() => {
       const assistantMessage: Message = {
         id: (Date.now() + 1).toString(),
@@ -65,14 +92,100 @@ export function ChatInterface() {
     }
   };
 
+  // LOGOUT handler: call server, then clear local state & profile, clear temp storage, navigate
+  const handleLogout = async () => {
+    try {
+      // call server logout - use unwrap() to throw on rejected
+      await dispatch(logoutThunk()).unwrap();
+    } catch (err) {
+      // If server logout fails, we still perform local cleanup (so user is signed out locally).
+      console.warn("Server logout failed:", err);
+    } finally {
+      // Always clear local auth/profile state
+      dispatch(logoutLocal());
+      dispatch(clearProfile());
+      // Remove any temporary persisted items
+      localStorage.removeItem("pendingAccountId");
+      // navigate to sign-in page (adjust route if your app uses /login)
+      navigate("/");
+    }
+  };
+
   return (
     <div className="flex flex-col h-screen bg-background">
       {/* Header */}
-      <div className="flex items-center gap-3 p-4 border-b border-border">
-        <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center">
-          <Bot className="w-4 h-4 text-primary-foreground" />
+      <div className="flex items-center justify-between p-4 border-b border-border">
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center">
+            <Bot className="w-4 h-4 text-primary-foreground" />
+          </div>
+          <h1 className="text-xl font-semibold text-foreground">Zane AI</h1>
         </div>
-        <h1 className="text-xl font-semibold text-foreground">Zane AI</h1>
+
+        {/* Profile Dropdown */}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <div
+              className="w-9 h-9 rounded-full overflow-hidden cursor-pointer border border-border"
+              title="Account"
+            >
+              <img
+                src={account?.profilePicture || "/default-avatar.png"}
+                alt="profile"
+                className="w-full h-full object-cover"
+              />
+            </div>
+          </DropdownMenuTrigger>
+
+          <DropdownMenuContent align="end" className="w-56">
+            {/* Header */}
+            <div className="flex items-center gap-3 p-3">
+              <img
+                src={account?.profilePicture || "/default-avatar.png"}
+                alt="profile"
+                className="w-12 h-12 rounded-full object-cover"
+              />
+              <div className="flex flex-col">
+                <span className="font-semibold text-sm">
+                  {account?.name || "Pendeet User"}
+                </span>
+                <span className="text-xs text-muted-foreground">
+                  {account?.email || "user@example.com"}
+                </span>
+              </div>
+            </div>
+
+            <div className="px-3 pb-2">
+              <Button
+                variant="outline"
+                className="w-full"
+                onClick={() => navigate("/profile")}
+              >
+                View Profile
+              </Button>
+            </div>
+
+            <DropdownMenuSeparator />
+
+            {/* Links */}
+            <DropdownMenuItem onClick={() => navigate("/help")}>
+              Help Center
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => navigate("/privacy")}>
+              Privacy
+            </DropdownMenuItem>
+
+            <DropdownMenuSeparator />
+
+            {/* Logout */}
+            <DropdownMenuItem
+              onClick={handleLogout}
+              className="text-red-500 font-medium"
+            >
+              Logout
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
 
       {/* Messages */}

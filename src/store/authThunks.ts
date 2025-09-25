@@ -19,12 +19,21 @@ interface VerifyOtpPayload {
 // ---- SIGN IN ----
 export const signinThunk = createAsyncThunk(
   "auth/signin",
-  async ({ email, password }: SigninPayload, thunkAPI) => {
+  async ({ email, password }: { email: string; password: string }, thunkAPI) => {
     try {
       const res = await api.post("/account/signin", { email, password });
-      return res.data; // expect { account, tokens?, message }
+
+      const { accessToken, refreshToken, account } = res.data;
+
+      // Save tokens in localStorage
+      localStorage.setItem("accessToken", accessToken);
+      localStorage.setItem("refreshToken", refreshToken);
+
+      return account;
     } catch (err: any) {
-      return thunkAPI.rejectWithValue(err.response?.data?.message || "Sign in failed");
+      return thunkAPI.rejectWithValue(
+        err.response?.data?.message || "Sign in failed"
+      );
     }
   }
 );
@@ -68,10 +77,16 @@ export const refreshTokenThunk = createAsyncThunk(
   "auth/refreshToken",
   async (_, thunkAPI) => {
     try {
-      const res = await api.post("/account/refresh");
-      return res.data;
+      const refreshToken = localStorage.getItem("refreshToken");
+      const res = await api.post("/account/refresh", { refreshToken });
+
+      const { accessToken } = res.data;
+
+      localStorage.setItem("accessToken", accessToken);
+
+      return accessToken;
     } catch (err: any) {
-      return thunkAPI.rejectWithValue("Unable to refresh token");
+      return thunkAPI.rejectWithValue("Session expired, please sign in again");
     }
   }
 );
@@ -81,10 +96,17 @@ export const logoutThunk = createAsyncThunk(
   "auth/logout",
   async (_, thunkAPI) => {
     try {
-      const res = await api.post("/account/logout");
+      const res = await api.post(
+        "/account/logout",
+        {},
+        { withCredentials: true } // ✅ ensure refreshToken cookie is sent
+      );
       return res.data; // { message }
     } catch (err: any) {
-      return thunkAPI.rejectWithValue(err.response?.data?.error || "Logout failed");
+      return thunkAPI.rejectWithValue(
+        err.response?.data?.error || "Logout failed"
+      );
     }
   }
 );
+
