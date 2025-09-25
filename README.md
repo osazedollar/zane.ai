@@ -8,6 +8,6 @@ With Zane, shoppers can:
 * 🤝 **Connect with vendors**: Chat directly with verified sellers to get the best offers.
 * 🛒 **Shop seamlessly**: Add items to cart or wishlist directly from the conversation.
 
-For businesses, Zane provides a powerful AI-driven channel to engage customers, boost conversions, and streamline support — all while maintaining a natural, conversational shopping experience.
+For businesses, Zane provides a powerful AI-driven channel to engage customers, boost conversions, and streamline support — all while maintaining a natural, conversational shopping experience...
 
 
