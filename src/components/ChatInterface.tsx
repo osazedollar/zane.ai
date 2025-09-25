@@ -15,7 +15,11 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-
+import ProfileImage from "../assets/profile_image.jpg"
+import Logo from "../assets/zane_logo_2.png"
+import { HiOutlineLogout } from "react-icons/hi";
+import { IoMdHelpCircleOutline } from "react-icons/io";
+import { MdOutlinePrivacyTip } from "react-icons/md";
 import { logoutLocal } from "@/store/authSlice";
 import { logoutThunk } from "@/store/authThunks";
 import { fetchProfile } from "@/store/profileThunks";
@@ -76,7 +80,7 @@ export function ChatInterface() {
     setTimeout(() => {
       const assistantMessage: Message = {
         id: (Date.now() + 1).toString(),
-        content: "This is a placeholder response. Connect your backend here.",
+        content: "This is a placeholder response. and the Creator is Alex Omosigho",
         role: "assistant",
         timestamp: new Date(),
       };
@@ -116,8 +120,12 @@ export function ChatInterface() {
       {/* Header */}
       <div className="flex items-center justify-between p-4 border-b border-border">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center">
-            <Bot className="w-4 h-4 text-primary-foreground" />
+          <div className="w-8 h-8 rounded-full flex items-center justify-center">
+            <img
+              src={Logo}
+              alt="Zane AI Logo"
+              className="w-8 h-8 object-contain rounded-full overflow-hidden cursor-pointer border border-border"
+             />
           </div>
           <h1 className="text-xl font-semibold text-foreground">Zane AI</h1>
         </div>
@@ -130,7 +138,7 @@ export function ChatInterface() {
               title="Account"
             >
               <img
-                src={account?.profilePicture || "/default-avatar.png"}
+                src={account?.profilePicture || ProfileImage}
                 alt="profile"
                 className="w-full h-full object-cover"
               />
@@ -141,7 +149,7 @@ export function ChatInterface() {
             {/* Header */}
             <div className="flex items-center gap-3 p-3">
               <img
-                src={account?.profilePicture || "/default-avatar.png"}
+                src={account?.profilePicture || ProfileImage}
                 alt="profile"
                 className="w-12 h-12 rounded-full object-cover"
               />
@@ -168,21 +176,31 @@ export function ChatInterface() {
             <DropdownMenuSeparator />
 
             {/* Links */}
-            <DropdownMenuItem onClick={() => navigate("/help")}>
-              Help Center
+            <DropdownMenuItem 
+              onClick={() => navigate("/help")}
+              className="flex gap-3"
+            >
+              <IoMdHelpCircleOutline className="w-5 h-5"/>
+              <span>Help Center</span>
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => navigate("/privacy")}>
-              Privacy
+            <DropdownMenuItem 
+              onClick={() => navigate("/privacy")}
+              className="flex gap-3"
+            >
+            <MdOutlinePrivacyTip className="w-5 h-5"/>
+              <span>Privacy</span>
             </DropdownMenuItem>
 
             <DropdownMenuSeparator />
 
             {/* Logout */}
+            
             <DropdownMenuItem
               onClick={handleLogout}
-              className="text-red-500 font-medium"
+              className="flex items-center justify-center gap-2 text-white font-bold bg-red-600"
             >
-              Logout
+              <HiOutlineLogout className="w-5 h-5" />
+              <span>Logout</span>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

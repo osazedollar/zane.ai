@@ -96,17 +96,32 @@ export const logoutThunk = createAsyncThunk(
   "auth/logout",
   async (_, thunkAPI) => {
     try {
+      const refreshToken = localStorage.getItem("refreshToken");
+
+      if (!refreshToken) {
+        return thunkAPI.rejectWithValue("No refresh token found");
+      }
+
+      // ✅ send token properly
       const res = await api.post(
         "/account/logout",
-        {},
-        { withCredentials: true } // ✅ ensure refreshToken cookie is sent
+        { refreshToken }, // <-- goes in the body
+        { headers: { "Content-Type": "application/json" } }
       );
+
+      // cleanup
+      localStorage.removeItem("accessToken");
+      localStorage.removeItem("refreshToken");
+
       return res.data; // { message }
     } catch (err: any) {
+      console.error("Logout error:", err.response?.data || err.message);
       return thunkAPI.rejectWithValue(
         err.response?.data?.error || "Logout failed"
       );
     }
   }
 );
+
+
 
